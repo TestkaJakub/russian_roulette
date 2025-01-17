@@ -1,5 +1,10 @@
-// Type your code here, or load an example.
-use std::rc::Rc;
+pub use hashbrown::HashSet;
+
+pub mod bool_enums;
+pub mod uvec;
+
+pub mod revolver;
+use revolver::*;
 
 mod player;
 use player::*;
@@ -7,29 +12,34 @@ use player::*;
 mod player_manager;
 use player_manager::*;
 
-
 fn main() {
-    let player1 = Player::new("p1");
-    let player2 = Player::new("p2");
-    let player3 = Player::new("p3");
-    let player4 = Player::new("p4");
-    let player5 = Player::new("p5");
-    let player6 = Player::new("p6");
-
-    player1.borrow_mut().next_player = Some(Rc::downgrade(&player2));
-    player2.borrow_mut().next_player = Some(Rc::downgrade(&player3));
-    player3.borrow_mut().next_player = Some(Rc::downgrade(&player4));
-    player4.borrow_mut().next_player = Some(Rc::downgrade(&player5));
-    player5.borrow_mut().next_player = Some(Rc::downgrade(&player6));
-    player6.borrow_mut().next_player = Some(Rc::downgrade(&player1));
-
-    let player_hash : hashbrown::HashSet<&Rc<RefPlayer>> = HashSet::from([&player1, &player2, &player3, &player4, &player5, &player6]);
+    let mut player_manager = PlayerManager::new();
+    let mut revolver = Revolver::new("111111");
+    revolver.spin(None);
     
-    let player_manager = PlayerManager::new(Some(player_hash));
+    player_manager.add_player("p1");
+    player_manager.add_player("p2");
+    player_manager.add_player("p3");
+    player_manager.add_player("p4");
+    player_manager.add_player("p5");
+    player_manager.add_player("p6");
 
-    for player in player_manager.get_alive().iter() {
-        println!("{:?}", &player);
+    'game: loop
+    {
+        let player_count = player_manager.player_set.len();
+        for i in 0..player_count {
+            if player_manager.get_alive_players().len() <= 1 {
+                println!("The winner is {}", player_manager.get_alive_players()[0].name);
+                break 'game;
+            }
+            if revolver.is_loaded().is_loaded() == false {
+                println!("No bullets left, remaining players are:");
+                for still_alive in player_manager.get_alive_players() {
+                    println!("{}", still_alive.name);
+                }
+                break 'game;
+            }
+            revolver = player_manager.player_set[i].play_turn(revolver);
+        }
     }
-
-    player1.borrow_mut().play_roulette(Some(0b1111111111111111), &player_manager);
 }

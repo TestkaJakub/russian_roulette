@@ -1,36 +1,27 @@
-pub use hashbrown::HashSet;
-use crate::player::*;
+use crate::{uvec::UVec, Player};
 
-
-pub struct PlayerManager<'a> {
-    pub player_set: HashSet<&'a RcRefPlayer>
+pub struct PlayerManager {
+    pub player_set: UVec<Player>
 }
 
-impl<'a> PlayerManager<'a> {
-    pub fn new(player_set : Option<HashSet<&'a RcRefPlayer>>) -> Self {
-        let p_set = player_set.unwrap_or(HashSet::new());
-        
-        let player_manager = PlayerManager {
-            player_set : p_set,
-        };
-        
-        player_manager
-    }
-    
-    #[allow(dead_code)]
-    fn add_player(&mut self, player : &'a RcRefPlayer) {
-        self.player_set.insert(player);
+impl PlayerManager {
+    pub fn new() -> Self {
+        return PlayerManager {
+            player_set: UVec::new(),
+        }
     }
 
-    pub fn get_alive(&self) -> HashSet<&RcRefPlayer> {
-        let mut alive_players = HashSet::new();
-        
+    pub fn add_player(&mut self, x : &str) {
+        self.player_set.add(Player::new(x));
+    }
+
+    pub fn get_alive_players(&self) -> UVec<&Player> {
+        let mut alive_players = UVec::new();
         for player in self.player_set.iter() {
-            if player.borrow().alive {
-                alive_players.insert(* player);
+            if player.is_alive.is_alive() {
+                alive_players.add(player); // Adds a reference to the player
             }
         }
-
         alive_players
     }
 }
