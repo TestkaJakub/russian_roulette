@@ -1,67 +1,12 @@
 // Type your code here, or load an example.
-use std::{cell::RefCell, ops::Shr, rc::{Rc, Weak}};
+use std::rc::Rc;
 
-#[derive(Debug)]
-struct Player {
-    name: String,
-    next_player: Option<Weak<RefCell<Player>>>,
-}
+mod player;
+use player::*;
 
-impl Player {
-    fn new(name: &str) -> Rc<RefCell<Self>> {
-        Rc::new(RefCell::new(Player {
-            name: name.to_string(),
-            next_player: None,
-        }))
-    }
+mod player_manager;
+use player_manager::*;
 
-    fn shoot(&self, cylinder : u128) -> bool {
-        if cylinder % 2 == 1 {
-            return true;
-        }
-        false
-    }
-
-    fn play_one_turn(&self, cylinder : u128) -> Option<u128> {
-
-        if self.shoot(cylinder) {
-            println!("Player {} died!", self.name);
-        }
-        
-        self.next_player.as_ref()
-                        .and_then(|x| x.upgrade())
-                        .and_then(|x| x.try_borrow_mut()
-                                                            .ok()
-                                                            .and_then(|x| x.play_one_turn(cylinder.shr(1))))
-                        .or_else(|| Some(cylinder.shr(1))) 
-                        
-    }
-
-    fn play_roulette(&self, cylinder: Option<u128>) -> Option<u128> {
-        match cylinder.and_then(|v: u128| 
-            {
-                if v > 0
-                {
-                    self.play_one_turn(v)
-                }
-                else 
-                {
-                    None
-                }
-            } 
-        )
-                .or_else(|| None) 
-                {
-                    Some(v) if v > 0 => self.play_roulette(Some(v)),
-                    _ => { 
-                        println!("No bullets left, game ends!");
-                        None
-                    }
-                }
-    }
-
-
-}
 
 fn main() {
     let player1 = Player::new("p1");
@@ -78,5 +23,13 @@ fn main() {
     player5.borrow_mut().next_player = Some(Rc::downgrade(&player6));
     player6.borrow_mut().next_player = Some(Rc::downgrade(&player1));
 
-    player1.borrow_mut().play_roulette(Some(0b100000000000));
+    let player_hash : hashbrown::HashSet<&Rc<RefPlayer>> = HashSet::from([&player1, &player2, &player3, &player4, &player5, &player6]);
+    
+    let player_manager = PlayerManager::new(Some(player_hash));
+
+    for player in player_manager.get_alive().iter() {
+        println!("{:?}", &player);
+    }
+
+    player1.borrow_mut().play_roulette(Some(0b1111111111111111), &player_manager);
 }
