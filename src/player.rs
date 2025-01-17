@@ -9,7 +9,7 @@ pub enum IsAlive {
 impl_state_check!(IsAlive, Alive, is_alive);
 
 pub struct Player {
-    name: String,
+    pub name: String,
     pub is_alive: IsAlive,
 }
 
@@ -38,5 +38,11 @@ impl Player {
         }
 
         revolver
+    }
+}
+
+impl PartialEq for Player {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name && self.is_alive.is_alive() == other.is_alive.is_alive()
     }
 }

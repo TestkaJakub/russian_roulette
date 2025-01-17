@@ -35,17 +35,32 @@ impl Revolver {
         self.initialize(x);
     }
     
-    pub fn spin(&mut self, x : Option<u8>) {
+    pub fn spin(&mut self, x: Option<u8>) {
         let mut rng = rand::thread_rng();
-        let spin_strength  = x.unwrap_or_else(|| rng.gen_range(0..self.cylinder_capacity));
-
-        self.cylinder_sequence = self.cylinder_sequence.rotate_right(spin_strength as u32);
+    
+        // Default spin strength is a random number within the cylinder capacity
+        let spin_strength = x.unwrap_or_else(|| rng.gen_range(0..self.cylinder_capacity)) as u32;
+    
+        // Mask to ensure we only work within the `cylinder_capacity` bits
+        let mask = (1u128 << self.cylinder_capacity) - 1; // e.g., for 4 bits, mask = 0b1111
+    
+        // Apply the mask to ensure the cylinder_sequence fits within the cylinder capacity
+        self.cylinder_sequence &= mask;
+    
+        // Perform the rotation as a `cylinder_capacity`-bit sequence
+        let rotated = (self.cylinder_sequence.rotate_right(spin_strength) & mask)
+            | ((self.cylinder_sequence << ((self.cylinder_capacity as u32) - spin_strength)) & mask);
+    
+        self.cylinder_sequence = rotated;
     }
 
     #[allow(dead_code)]
     pub fn attempt_shooting(&mut self) -> Trigger {
         let result = match self.cylinder_sequence % 2 == 1 {
-            true => Trigger::Fire,
+            true => {
+                self.cylinder_sequence = self.cylinder_sequence - 1;
+                Trigger::Fire
+            },
             false => Trigger::DryFire
         };
         self.spin(Some(1));
