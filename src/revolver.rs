@@ -1,28 +1,19 @@
-use rand::prelude::*;
+use crate::impl_state_check;
 
-macro_rules! impl_state_check {
-    ($enum_name:ident, $variant:ident, $fn_name:ident) => {
-        impl $enum_name {
-            #[allow(dead_code)]
-            pub fn $fn_name(&self) -> bool {
-                matches!(self, $enum_name::$variant)
-            }
-        }
-    };
-}
+use rand::prelude::*;
 pub enum Trigger {
     Fire,
     DryFire,
 }
 
-impl_state_check!(Trigger, Fire, fired);
+impl_state_check!(Trigger, Fire, did_fired);
 
 pub enum IsLoaded {
     Loaded,
     Unloaded,
 }
 
-impl_state_check!(IsLoaded, Loaded, loaded);
+impl_state_check!(IsLoaded, Loaded, is_loaded);
 
 pub struct Revolver {
     cylinder_sequence: u128,
