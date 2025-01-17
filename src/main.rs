@@ -1,9 +1,8 @@
-pub use hashbrown::HashSet;
-
 pub mod bool_enums;
 pub mod uvec;
 
 pub mod revolver;
+
 use revolver::*;
 
 mod player;
@@ -14,16 +13,21 @@ use player_manager::*;
 
 fn main() {
     let mut player_manager = PlayerManager::new();
-    let mut revolver = Revolver::new("111111");
-    revolver.spin(None);
+    player_manager.add_player("Filip");
+    player_manager.add_player("PSEU");
+    player_manager.add_player("Gwiezdny");
+    player_manager.add_player("Igor");
+    player_manager.add_player("Lord");
+    player_manager.add_player("Janek");
+    player_manager.add_player("Q2CK");
+    player_manager.add_player("KubolV");
+    player_manager.add_player("Krzysiu");
     
-    player_manager.add_player("p1");
-    player_manager.add_player("p2");
-    player_manager.add_player("p3");
-    player_manager.add_player("p4");
-    player_manager.add_player("p5");
-    player_manager.add_player("p6");
+    let mut revolver = Revolver::new(RevolverData::CylinderCapacity(player_manager.get_alive_players().len() as u8));
+    
+    println!("{:b}", revolver.cylinder_sequence);
 
+    
     'game: loop
     {
         let player_count = player_manager.player_set.len();
@@ -39,7 +43,7 @@ fn main() {
                 }
                 break 'game;
             }
-            revolver = player_manager.player_set[i].play_turn(revolver);
+            player_manager.player_set[i].play_turn(&mut revolver);
         }
     }
 }

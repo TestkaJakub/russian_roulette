@@ -1,6 +1,7 @@
 use crate::impl_state_check;
 use crate::Revolver;
 
+#[derive(PartialEq)]
 pub enum IsAlive {
     Alive,
     Dead,
@@ -8,6 +9,7 @@ pub enum IsAlive {
 
 impl_state_check!(IsAlive, Alive, is_alive);
 
+#[derive(PartialEq)]
 pub struct Player {
     pub name: String,
     pub is_alive: IsAlive,
@@ -20,8 +22,14 @@ impl Player {
             is_alive: IsAlive::Alive,
         }
     }
+    
+    pub fn play_turn(&mut self, revolver : &mut Revolver) {
+        if self.is_alive.is_alive() {
+            self.pull_the_trigger(revolver);
+        }
+    }
 
-    fn pull_the_trigger(&mut self, mut revolver : Revolver) -> Revolver {
+    fn pull_the_trigger(&mut self, revolver : &mut Revolver) {
         if revolver.attempt_shooting().did_fired() {
             println!("Player {} shot themselves", self.name);
             self.is_alive = IsAlive::Dead;
@@ -29,20 +37,6 @@ impl Player {
         else {
             println!("Player {} got lucky this time", self.name);
         }
-        revolver
     }
 
-    pub fn play_turn(&mut self, mut revolver : Revolver) -> Revolver {
-        if self.is_alive.is_alive() {
-            revolver = self.pull_the_trigger(revolver);
-        }
-
-        revolver
-    }
-}
-
-impl PartialEq for Player {
-    fn eq(&self, other: &Self) -> bool {
-        self.name == other.name && self.is_alive.is_alive() == other.is_alive.is_alive()
-    }
 }

@@ -16,12 +16,6 @@ impl PlayerManager {
     }
 
     pub fn get_alive_players(&self) -> UVec<&Player> {
-        let mut alive_players = UVec::new();
-        for player in self.player_set.iter() {
-            if player.is_alive.is_alive() {
-                alive_players.add(player); // Adds a reference to the player
-            }
-        }
-        alive_players
+        self.player_set.iter().filter(|x| x.is_alive.is_alive()).collect()
     }
 }

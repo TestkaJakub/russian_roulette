@@ -1,6 +1,11 @@
-use crate::impl_state_check;
-
+use crate::{impl_state_check, uvec::UVec};
 use rand::prelude::*;
+
+pub enum RevolverData {
+    CylinderSequence(String),
+    CylinderCapacity(u8),
+}
+
 pub enum Trigger {
     Fire,
     DryFire,
@@ -16,26 +21,29 @@ pub enum IsLoaded {
 impl_state_check!(IsLoaded, Loaded, is_loaded);
 
 pub struct Revolver {
-    cylinder_sequence: u128,
+    pub cylinder_sequence: u128,
     cylinder_capacity: u8,
 }
 
 impl Revolver {
-    pub fn new(x : &str) -> Self {
+    pub fn new(x : RevolverData) -> Self {
         let mut revolver = Self {
             cylinder_sequence: 0,
             cylinder_capacity: 0,
         };
-        revolver.initialize(x);
+        match x {
+            RevolverData::CylinderSequence(data) => revolver.initialize(data),
+            RevolverData::CylinderCapacity(data) => revolver.random_cylinder(Some(data)),
+        }
         revolver
     }
 
-    #[allow(dead_code)]
     pub fn load(&mut self, x : &str) {
-        self.initialize(x);
+        self.initialize(x.to_string());
     }
     
     pub fn spin(&mut self, x: Option<u8>) {
+
         let mut rng = rand::thread_rng();
     
         // Default spin strength is a random number within the cylinder capacity
@@ -54,7 +62,6 @@ impl Revolver {
         self.cylinder_sequence = rotated;
     }
 
-    #[allow(dead_code)]
     pub fn attempt_shooting(&mut self) -> Trigger {
         let result = match self.cylinder_sequence % 2 == 1 {
             true => {
@@ -67,10 +74,39 @@ impl Revolver {
         result
     }
 
-    fn initialize(&mut self, x: &str) {
-        self.cylinder_sequence = u128::from_str_radix(x, 2)
+    fn initialize(&mut self, x: String) {
+        let x = x.replace("_", "");
+        self.cylinder_sequence = u128::from_str_radix(&x, 2)
             .expect("Invalid cylinder sequence. Expected binary number");
         self.cylinder_capacity = x.len() as u8;
+    }
+
+    pub fn shuffle(&mut self, ones: Option<u8>) {
+        let mut possible_bullet_positions: UVec<u8> = (0..self.cylinder_capacity).collect();
+
+        possible_bullet_positions.shuffle(thread_rng());
+
+        let ones = ones.unwrap_or_else(|| self.cylinder_sequence.count_ones() as u8);
+
+        let selected_positions = possible_bullet_positions.iter()
+                                                                                           .take(ones as usize);
+        
+        let mut result = 0;
+        for &pos in selected_positions {
+            result |= 1 << pos;
+        }
+
+        self.cylinder_sequence = result;
+    }
+
+    pub fn random_cylinder(&mut self, cyl_len : Option<u8>) {
+        let cl = cyl_len.unwrap_or_else(|| self.cylinder_capacity);
+        self.cylinder_capacity = cl;
+        let mut rng = thread_rng();
+
+        let cyl_len = rng.gen_range(1..=cl);
+
+        self.shuffle(Some(cyl_len));
     }
 
     #[allow(dead_code)]

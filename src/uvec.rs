@@ -1,4 +1,5 @@
 use std::fmt::Debug;
+use rand::{rngs::ThreadRng, seq::SliceRandom};
 
 pub struct UVec<T> {
     items: Vec<T>,
@@ -33,6 +34,10 @@ impl<T: PartialEq> UVec<T> {
     pub fn as_mut_vec(&mut self) -> &mut Vec<T> {
         &mut self.items
     }
+
+    pub fn shuffle(&mut self, mut rng : ThreadRng){
+        self.items.shuffle(&mut rng);
+    }
 }
 
 // Optional: Implement Debug for easier printing.
@@ -62,9 +67,7 @@ impl<T> UVec<T> {
     pub fn iter(&self) -> impl Iterator<Item = &T> {
         self.items.iter()
     }
-}
 
-impl<T> UVec<T> {
     pub fn len(&self) -> usize {
         self.items.len()
     }
@@ -93,5 +96,11 @@ impl<T> Index<usize> for UVec<T> {
 impl<T> IndexMut<usize> for UVec<T> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         &mut self.items[index]
+    }
+}
+
+impl<T> FromIterator<T> for UVec<T> {
+    fn from_iter<P: IntoIterator<Item = T>>(iter: P) -> Self {
+        UVec{items: iter.into_iter().collect()}
     }
 }
