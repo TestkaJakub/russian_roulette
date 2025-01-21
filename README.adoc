@@ -1,0 +1,69 @@
+= Rust Russian Roulette Simulator
+
+== Overview
+The Rust Russian Roulette Simulator is a CLI-based simulation of the infamous game of Russian Roulette, written in Rust. Players can configure the game via command-line arguments or interactively within the program. The game ends when either only one player is left alive or there are no more bullets left.
+
+== Features
+* Configurable cylinder sequence or random generation.
+* Multiple spin modes for the revolver.
+* Interactive player configuration.
+
+== Usage
+
+=== Command-line Arguments
+The simulator accepts various command-line arguments to configure the game. Below is a description of the available options:
+
+==== Cylinder Data
+`--cylinder_sequence` (`-c`)
+* Provide an explicit cylinder sequence as a string, e.g., `001001`.
+* This specifies the exact placement of bullets in the cylinder.
+
+`--cylinder_capacity` (`-C`)
+* Provide the capacity for a randomly generated cylinder.
+* Specify the number of chambers (e.g., 6).
+
+NOTE: The `--cylinder_sequence` and `--cylinder_capacity` options are mutually exclusive. You can provide either one or none, but not both.
+
+==== Spin Mode
+`--spin_mode` (`-s`)
+* Select the spin mode for the cylinder. Available values:
+  - `NoSpin`: Do not spin the cylinder.
+  - `Spin`: Perform a single spin before starting the game.
+  - `SpinBeforeShot`: Spin the cylinder before each shot.
+
+==== Player Configuration File
+`--player_conf_file` (`-p`)
+* Provide the location of a player configuration file.
+* This file defines the players and their details for the game.
+
+=== Example Usage
+1. Specify a predefined cylinder sequence:
+```bash
+roulette_simulator -c "001001" -s Spin -p players.txt
+```
+
+2. Use a random cylinder with a specified capacity:
+```bash
+roulette_simulator -C 6 -s SpinBeforeShot -p players.txt
+```
+
+3. Run interactively without predefined configurations:
+```bash
+roulette_simulator
+```
+
+== Game Rules
+1. The game simulates Russian Roulette.
+2. Players take turns pulling the trigger of a revolver.
+3. The game ends when:
+   * Only one player is left alive.
+   * The cylinder runs out of bullets.
+
+== Interactive Mode
+If no configuration is provided via command-line arguments, the simulator will prompt the user interactively to:
+* Set up players.
+* Define the cylinder sequence or capacity.
+* Choose the spin mode.
+
+== Contributing
+Contributions are welcome! Feel free to submit issues or pull requests to improve the simulator.
