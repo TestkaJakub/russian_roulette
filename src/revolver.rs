@@ -1,10 +1,5 @@
-use crate::{impl_state_check, uvec::UVec};
+use crate::{impl_state_check, uvec::UVec, CylinderData, SpinMode};
 use rand::prelude::*;
-
-pub enum RevolverData {
-    CylinderSequence(String),
-    CylinderCapacity(u8),
-}
 
 pub enum Trigger {
     Fire,
@@ -23,18 +18,24 @@ impl_state_check!(IsLoaded, Loaded, is_loaded);
 pub struct Revolver {
     pub cylinder_sequence: u128,
     cylinder_capacity: u8,
+    spin_mode: SpinMode
 }
 
 impl Revolver {
-    pub fn new(x : RevolverData) -> Self {
+    pub fn new(x : CylinderData, y : SpinMode) -> Self {
         let mut revolver = Self {
             cylinder_sequence: 0,
             cylinder_capacity: 0,
+            spin_mode: y,
         };
         match x {
-            RevolverData::CylinderSequence(data) => revolver.initialize(data),
-            RevolverData::CylinderCapacity(data) => revolver.random_cylinder(Some(data)),
+            CylinderData::Sequence { sequence: data } => revolver.initialize(data),
+            CylinderData::Capacity { capacity: data } => revolver.random_cylinder(Some(data)),
         }
+        if revolver.spin_mode == SpinMode::Spin {
+            revolver.spin(None)
+        }
+        
         revolver
     }
 
@@ -63,6 +64,10 @@ impl Revolver {
     }
 
     pub fn attempt_shooting(&mut self) -> Trigger {
+        if self.spin_mode == SpinMode::SpinBeforeShot {
+            self.spin(None);
+        }
+
         let result = match self.cylinder_sequence % 2 == 1 {
             true => {
                 self.cylinder_sequence = self.cylinder_sequence - 1;
