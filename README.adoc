@@ -39,17 +39,17 @@ NOTE: The `--cylinder_sequence` and `--cylinder_capacity` options are mutually e
 === Example Usage
 1. Specify a predefined cylinder sequence:
 ```bash
-roulette_simulator -c "001001" -s Spin -p players.txt
+russian_roulette -c "001001" -s Spin -p players.txt
 ```
 
 2. Use a random cylinder with a specified capacity:
 ```bash
-roulette_simulator -C 6 -s SpinBeforeShot -p players.txt
+russian_roulette -C 6 -s SpinBeforeShot -p players.txt
 ```
 
 3. Run interactively without predefined configurations:
 ```bash
-roulette_simulator
+russian_roulette
 ```
 
 == Game Rules
