@@ -1,3 +1,5 @@
+use std::io::{stdin, stdout, Read, Write};
+
 mod roulette;
 use roulette::*;
 
@@ -72,5 +74,14 @@ fn main() {
     let cylinder_data = get_cylinder(args.cylinder_data);
     let spin_mode = get_spin(args.spin_mode);
     play(players, cylinder_data, spin_mode);
+
+    pause();
+}
+
+fn pause() {
+    let mut stdout = stdout();
+    stdout.write(b"Press Enter to continue...").unwrap();
+    stdout.flush().unwrap();
+    stdin().read(&mut [0]).unwrap();
 }
 
